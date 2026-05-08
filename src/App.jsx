@@ -12,23 +12,44 @@ const App = () => {
     { id: 2, text: "React state makes building feeds so much easier. 🚀", time: "11:30 AM" }
   ]);
 
-  // This function handles the "Post" action.
+  // This state tracks which thought we are currently editing (null means none).
+  const [editingId, setEditingId] = useState(null);
+
+  // This function handles the "Post" or "Save" action.
   const handlePost = (e) => {
     // We prevent the default form submission (which would refresh the page).
     e.preventDefault();
 
-    // We create a new thought object with a unique ID and current text.
-    const newObject = {
-      id: Date.now(), // Date.now() gives us a unique number based on the current millisecond!
-      text: newThought,
-      time: "Just now"
-    };
-
-    // We update the 'thoughts' array.
-    // [newObject, ...thoughts] means: "Put the new thought first, then spread all the old ones after it."
-    setThoughts([newObject, ...thoughts]);
+    if (editingId) {
+      // If we are editing, we update the existing thought instead of creating a new one.
+      const updatedThoughts = thoughts.map((thought) => 
+        thought.id === editingId ? { ...thought, text: newThought } : thought
+      );
+      setThoughts(updatedThoughts);
+      setEditingId(null);
+    } else {
+      // If we are NOT editing, we create a brand new thought object.
+      const newObject = {
+        id: Date.now(),
+        text: newThought,
+        time: "Just now"
+      };
+      setThoughts([newObject, ...thoughts]);
+    }
 
     // Finally, we clear the textarea so you can type your next thought!
+    setNewThought("");
+  };
+
+  // This function enters "Edit Mode".
+  const handleEdit = (thought) => {
+    setEditingId(thought.id);
+    setNewThought(thought.text); // Pre-fill the textarea with the old text!
+  };
+
+  // This function exits "Edit Mode" without saving.
+  const handleCancel = () => {
+    setEditingId(null);
     setNewThought("");
   };
 
@@ -65,16 +86,30 @@ const App = () => {
                    {thought.text}
                  </p>
                  
-                 {/* The Delete Button - visible by default on mobile, hover-only on desktop */}
-                 <button 
-                   onClick={() => handleDelete(thought.id)}
-                   className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 rounded-full text-gray-300 hover:text-red-500"
-                   title="Delete thought"
-                 >
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                   </svg>
-                 </button>
+                 {/* Action Buttons (Edit and Delete) */}
+                 <div className="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                   {/* The Edit Button */}
+                   <button 
+                     onClick={() => handleEdit(thought)}
+                     className="p-2 hover:bg-indigo-50 rounded-full text-gray-300 hover:text-indigo-500"
+                     title="Edit thought"
+                   >
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                     </svg>
+                   </button>
+
+                   {/* The Delete Button */}
+                   <button 
+                     onClick={() => handleDelete(thought.id)}
+                     className="p-2 hover:bg-red-50 rounded-full text-gray-300 hover:text-red-500"
+                     title="Delete thought"
+                   >
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                     </svg>
+                   </button>
+                 </div>
                </div>
                
                {/* Display the time in a smaller, subtle font at the bottom */}
@@ -92,20 +127,20 @@ const App = () => {
           {/* We wrap our inputs in a <form> to handle the submission professionally */}
           <form 
             onSubmit={handlePost}
-            className="rounded-2xl border border-gray-200 bg-white p-4 shadow-lg transition-shadow focus-within:ring-1 focus-within:ring-gray-200"
+            className={`rounded-2xl border bg-white p-4 shadow-lg transition-all focus-within:ring-1 ${editingId ? 'border-indigo-200 ring-indigo-100' : 'border-gray-200 focus-within:ring-gray-200'}`}
           >
-            {/* We connect the textarea to our 'newThought' state */}
-            {/* 'value' locks the text to our state, and 'onChange' updates the state as we type */}
+            {/* The text area where the user types */}
             <textarea
               className="w-full resize-none border-none bg-transparent text-lg placeholder-gray-400 focus:outline-none focus:ring-0"
-              placeholder="What's shimmering in your mind?"
+              placeholder={editingId ? "Refining your thought..." : "What's shimmering in your mind?"}
               rows="2"
               value={newThought}
               onChange={(e) => setNewThought(e.target.value)}
+              autoFocus={!!editingId}
             ></textarea>
             
             <div className="mt-2 flex items-center justify-between border-t border-gray-50 pt-3">
-              {/* We show an error message if the user goes over the 140 character limit */}
+              {/* Character Counter and Error Section */}
               <div className="flex flex-col">
                 <span className={`text-sm font-medium transition-colors ${newThought.length > 140 ? 'text-red-500' : 'text-gray-400'}`}>
                   {newThought.length} / 140
@@ -117,13 +152,27 @@ const App = () => {
                 )}
               </div>
               
-              <button 
-                type="submit"
-                disabled={newThought.length > 140 || newThought.length === 0}
-                className="rounded-full bg-black px-6 py-2 text-sm font-bold text-white transition-all active:scale-95 hover:bg-gray-800 shadow-sm disabled:opacity-20 disabled:cursor-not-allowed"
-              >
-                Post
-              </button>
+              <div className="flex gap-2">
+                {/* Cancel Button - only visible in Edit Mode */}
+                {editingId && (
+                  <button 
+                    type="button"
+                    onClick={handleCancel}
+                    className="rounded-full px-6 py-2 text-sm font-bold text-gray-500 transition-all hover:bg-gray-100 active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                )}
+
+                {/* Submit Button - toggles between Post and Save */}
+                <button 
+                  type="submit"
+                  disabled={newThought.length > 140 || newThought.length === 0}
+                  className={`rounded-full px-6 py-2 text-sm font-bold text-white transition-all active:scale-95 shadow-sm disabled:opacity-20 disabled:cursor-not-allowed ${editingId ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-black hover:bg-gray-800'}`}
+                >
+                  {editingId ? 'Save' : 'Post'}
+                </button>
+              </div>
             </div>
           </form>
         </div>
