@@ -12,6 +12,26 @@ const App = () => {
     { id: 2, text: "React state makes building feeds so much easier. 🚀", time: "11:30 AM" }
   ]);
 
+  // This function handles the "Post" action.
+  const handlePost = (e) => {
+    // We prevent the default form submission (which would refresh the page).
+    e.preventDefault();
+
+    // We create a new thought object with a unique ID and current text.
+    const newObject = {
+      id: Date.now(), // Date.now() gives us a unique number based on the current millisecond!
+      text: newThought,
+      time: "Just now"
+    };
+
+    // We update the 'thoughts' array.
+    // [newObject, ...thoughts] means: "Put the new thought first, then spread all the old ones after it."
+    setThoughts([newObject, ...thoughts]);
+
+    // Finally, we clear the textarea so you can type your next thought!
+    setNewThought("");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       {/* Header */}
@@ -47,7 +67,11 @@ const App = () => {
       {/* Fixed Bottom Compose Area */}
       <footer className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white/80 p-4 backdrop-blur-md">
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-lg transition-shadow focus-within:ring-1 focus-within:ring-gray-200">
+          {/* We wrap our inputs in a <form> to handle the submission professionally */}
+          <form 
+            onSubmit={handlePost}
+            className="rounded-2xl border border-gray-200 bg-white p-4 shadow-lg transition-shadow focus-within:ring-1 focus-within:ring-gray-200"
+          >
             {/* We connect the textarea to our 'newThought' state */}
             {/* 'value' locks the text to our state, and 'onChange' updates the state as we type */}
             <textarea
@@ -72,13 +96,14 @@ const App = () => {
               </div>
               
               <button 
+                type="submit"
                 disabled={newThought.length > 140 || newThought.length === 0}
                 className="rounded-full bg-black px-6 py-2 text-sm font-bold text-white transition-all active:scale-95 hover:bg-gray-800 shadow-sm disabled:opacity-20 disabled:cursor-not-allowed"
               >
                 Post
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </footer>
     </div>
