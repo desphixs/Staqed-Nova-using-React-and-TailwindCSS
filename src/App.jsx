@@ -5,6 +5,13 @@ const App = () => {
   // 'newThought' stores the text as you type, and 'setNewThought' is the function we use to update it.
   const [newThought, setNewThought] = useState("");
 
+  // This is our app's "permanent" memory (the feed).
+  // We start with two dummy thoughts so we can see what the feed will look like!
+  const [thoughts, setThoughts] = useState([
+    { id: 1, text: "This is my first thought on Nova!", time: "10:00 AM" },
+    { id: 2, text: "React state makes building feeds so much easier. 🚀", time: "11:30 AM" }
+  ]);
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       {/* Header */}
@@ -17,7 +24,24 @@ const App = () => {
 
       {/* Main Content Area */}
       <main className="mx-auto max-w-2xl px-4 py-8 pb-40">
-         {/* Phase 4 feed will go here */}
+         {/* We use .map() to loop through our 'thoughts' array and turn each object into a visual card! */}
+         <div className="flex flex-col gap-4">
+           {thoughts.map((thought) => (
+             <div 
+               key={thought.id} // Every item in a list needs a unique 'key' so React can keep track of it
+               className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+             >
+               {/* Display the thought text in a large, readable font */}
+               <p className="text-xl font-medium text-gray-800 leading-relaxed mb-4">
+                 {thought.text}
+               </p>
+               {/* Display the time in a smaller, subtle font at the bottom */}
+               <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                 {thought.time}
+               </span>
+             </div>
+           ))}
+         </div>
       </main>
 
       {/* Fixed Bottom Compose Area */}
