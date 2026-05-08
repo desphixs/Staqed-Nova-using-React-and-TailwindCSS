@@ -32,6 +32,14 @@ const App = () => {
     setNewThought("");
   };
 
+  // This function handles deleting a thought.
+  const handleDelete = (id) => {
+    // We use .filter() to create a new list that includes every thought EXCEPT the one we want to delete.
+    // "Keep every thought whose ID is NOT equal to the ID we clicked."
+    const updatedThoughts = thoughts.filter((thought) => thought.id !== id);
+    setThoughts(updatedThoughts);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       {/* Header */}
@@ -49,12 +57,26 @@ const App = () => {
            {thoughts.map((thought) => (
              <div 
                key={thought.id} // Every item in a list needs a unique 'key' so React can keep track of it
-               className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+               className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
              >
-               {/* Display the thought text in a large, readable font */}
-               <p className="text-xl font-medium text-gray-800 leading-relaxed mb-4">
-                 {thought.text}
-               </p>
+               <div className="flex items-start justify-between">
+                 {/* Display the thought text in a large, readable font */}
+                 <p className="text-xl font-medium text-gray-800 leading-relaxed mb-4">
+                   {thought.text}
+                 </p>
+                 
+                 {/* The Delete Button - visible by default on mobile, hover-only on desktop */}
+                 <button 
+                   onClick={() => handleDelete(thought.id)}
+                   className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 rounded-full text-gray-300 hover:text-red-500"
+                   title="Delete thought"
+                 >
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                   </svg>
+                 </button>
+               </div>
+               
                {/* Display the time in a smaller, subtle font at the bottom */}
                <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
                  {thought.time}
